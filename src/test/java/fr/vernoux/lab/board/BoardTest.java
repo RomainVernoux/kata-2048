@@ -4,6 +4,7 @@ import fr.vernoux.lab.RandomGenerator;
 import fr.vernoux.lab.doubles.CollisionRandomGeneratorDouble;
 import fr.vernoux.lab.doubles.RandomGeneratorDouble;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,6 +40,49 @@ class BoardTest {
 
         assertThat(board1.getContent()).isNotEqualTo(board2.getContent());
     }
+
+    @Nested
+    class MoveLeftTests {
+        @Test
+        void tiles_with_same_value_that_touches_merge_into_one() {
+            int[][] content = {
+                    {2, 2, 0, 0},
+                    {0, 0, 0, 0},
+                    {0, 0, 0, 0},
+                    {0, 0, 0, 0}
+            };
+            Board board = new BoardForTest(content);
+
+            board.moveLeft();
+
+            int[][] boardContent = board.getContent();
+            assertThat(numberOfCellsWithTiles(boardContent)).isEqualTo(1);
+            assertThat(boardContent[0][0]).isEqualTo(4);
+        }
+
+        @Test
+        void moves_all_tiles_to_the_left() {
+            int[][] content = {
+                    {2, 0, 0, 4},
+                    {0, 0, 2, 0},
+                    {0, 8, 0, 0},
+                    {0, 8, 4, 0}
+            };
+            Board board = new BoardForTest(content);
+
+            board.moveLeft();
+
+            int[][] boardContent = board.getContent();
+            int[][] expectedContent = {
+                    {2, 4, 0, 0},
+                    {2, 0, 0, 0},
+                    {8, 0, 0, 0},
+                    {8, 4, 0, 0}
+            };
+            assertThat(boardContent).isEqualTo(expectedContent);
+        }
+    }
+
 
     @Test
     @Disabled
