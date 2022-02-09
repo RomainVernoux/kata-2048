@@ -20,7 +20,8 @@ public class Board {
     public void moveLeft() {
         this.content = rows().stream()
                 .map(this::pushToStart)
-                .map(this::mergeCells)
+                .map(this::mergeTiles)
+                .map(this::fillWithCells)
                 .flatMap(Collection::stream)
                 .collect(toList());
     }
@@ -29,7 +30,8 @@ public class Board {
         this.content = rows().stream()
                 .map(this::reverseRow)
                 .map(this::pushToStart)
-                .map(this::mergeCells)
+                .map(this::mergeTiles)
+                .map(this::fillWithCells)
                 .map(this::reverseRow)
                 .flatMap(Collection::stream)
                 .collect(toList());
@@ -38,7 +40,8 @@ public class Board {
     public void moveUp() {
         List<List<Cell>> movedCells = columns().stream()
                 .map(this::pushToStart)
-                .map(this::mergeCells)
+                .map(this::mergeTiles)
+                .map(this::fillWithCells)
                 .collect(toList());
 
         this.content = toContent(movedCells);
@@ -48,7 +51,8 @@ public class Board {
         List<List<Cell>> movedCells = columns().stream()
                 .map(this::reverseRow)
                 .map(this::pushToStart)
-                .map(this::mergeCells)
+                .map(this::mergeTiles)
+                .map(this::fillWithCells)
                 .map(this::reverseRow)
                 .collect(toList());
 
@@ -134,36 +138,36 @@ public class Board {
     }
 
     private List<Cell> pushToStart(List<Cell> cells) {
-        Stream<Cell> pushedRow = cells.stream()
+        Stream<Cell> tiles = cells.stream()
                 .filter(Cell::isATile);
-        return fillBlankWithEmptyCells(pushedRow);
+        return tiles.collect(Collectors.toList());
     }
 
-    private List<Cell> fillBlankWithEmptyCells(Stream<Cell> cells) {
-        return Stream.concat(cells, emptyCells()).limit(4).collect(toList());
+    private List<Cell> fillWithCells(List<Cell> tiles) {
+        return Stream.concat(tiles.stream(), emptyCells()).limit(4).collect(toList());
     }
 
     private Stream<Cell> emptyCells() {
         return Stream.generate(Cell::new);
     }
 
-    private List<Cell> mergeCells(List<Cell> pushedRow) {
-        List<Cell> mergedCells = new ArrayList<>();
-        for (int i = 0; i < pushedRow.size(); i++) {
-            Cell cell1 = pushedRow.get(i);
-            if (cell1.isEmpty() || i == pushedRow.size() - 1) {
-                mergedCells.add(cell1);
+    private List<Cell> mergeTiles(List<Cell> tiles) {
+        List<Cell> mergedTiles = new ArrayList<>();
+        for (int i = 0; i < tiles.size(); i++) {
+            Cell tile = tiles.get(i);
+            if (i == tiles.size() - 1) {
+                mergedTiles.add(tile);
             } else {
-                Cell cell2 = pushedRow.get(i + 1);
-                if (cell1.equals(cell2)) {
-                    mergedCells.add(cell1.merge(cell2));
-                    mergedCells.add(new Cell());
+                Cell nextCell = tiles.get(i + 1);
+                if (tile.equals(nextCell)) {
+                    mergedTiles.add(tile.merge(nextCell));
+                    mergedTiles.add(new Cell());
                     i++;
                 } else {
-                    mergedCells.add(cell1);
+                    mergedTiles.add(tile);
                 }
             }
         }
-        return mergedCells;
+        return mergedTiles;
     }
 }

@@ -31,7 +31,7 @@ public class Cell {
     }
 
     public Cell merge(Cell cell) {
-        return new Cell(asInt() * 2);
+        return new Cell(cell.asInt() + asInt());
     }
 
     @Override
