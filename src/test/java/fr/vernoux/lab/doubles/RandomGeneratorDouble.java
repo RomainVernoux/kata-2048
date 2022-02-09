@@ -14,6 +14,6 @@ public class RandomGeneratorDouble implements RandomGenerator {
 
     @Override
     public int randomInt(int minIncluded, int maxExcluded) {
-        return random.nextInt(minIncluded, maxExcluded);
+        return random.nextInt(maxExcluded);
     }
 }

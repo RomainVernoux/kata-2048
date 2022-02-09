@@ -1,5 +1,8 @@
 package fr.vernoux.lab.board;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 public class Cell {
     private int value;
 
@@ -19,7 +22,35 @@ public class Cell {
         return value == 0;
     }
 
+    public boolean isATile() {
+        return !isEmpty();
+    }
+
     public void setTile(int value) {
         this.value = value;
+    }
+
+    public Cell merge(Cell cell) {
+        return new Cell(cell.asInt() + asInt());
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Cell cell = (Cell) o;
+
+        return new EqualsBuilder()
+                .append(value, cell.value)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(value)
+                .toHashCode();
     }
 }
