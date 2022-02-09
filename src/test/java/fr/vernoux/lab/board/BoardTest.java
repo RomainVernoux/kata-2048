@@ -62,6 +62,25 @@ class BoardTest {
         assertThat(numberOfCellsWithTiles(boardContent)).isEqualTo(2);
     }
 
+    @Test
+    void move_left_should_move_all_tiles_to_the_left() {
+        Board board = Board.fromContent(new int[][]{
+                {0, 0, 0, 0},
+                {0, 0, 2, 0},
+                {0, 0, 0, 0},
+                {2, 0, 0, 0},
+        });
+
+        board.moveLeft();
+
+        assertThat(board.getContent()).isDeepEqualTo(new int[][]{
+                {0, 0, 0, 0},
+                {2, 0, 0, 0},
+                {0, 0, 0, 0},
+                {2, 0, 0, 0},
+        });
+    }
+
     private int numberOfCellsWithTiles(int[][] boardContent) {
         int numberOfCellsWithTiles = 0;
         for (int[] row : boardContent) {
