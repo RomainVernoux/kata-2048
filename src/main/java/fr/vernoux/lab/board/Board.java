@@ -2,117 +2,99 @@ package fr.vernoux.lab.board;
 
 import fr.vernoux.lab.RandomGenerator;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.toList;
 
 public class Board {
 
-    private List<Cell> content;
-
-    public Board(RandomGenerator randomGenerator) {
-        this.content = contentWithEmptyCells();
-        addRandomTile(randomGenerator);
-        addRandomTile(randomGenerator);
-    }
+    private List<List<Cell>> rows;
 
     private Board() {
     }
 
-    public int[][] getContent() {
-        // TODO refactor this to simplify
-        int[][] view = new int[4][4];
-        for (int row = 0; row < 4; row++) {
-            for (int col = 0; col < 4; col++) {
-                view[row][col] = content.get(row * 4 + col).asInt();
-            }
-        }
-        return view;
-    }
-
     public void moveLeft() {
-        List<List<Cell>> rows = contentAsRows();
-        rows.forEach(this::moveRowLeft);
+        rows.forEach(this::moveTilesLeft);
     }
 
-    private List<List<Cell>> contentAsRows() {
-        // TODO refactor this to simplify
-        List<List<Cell>> result = new ArrayList<>();
-        for (int rowIndex = 0; rowIndex < 4; rowIndex++) {
-            ArrayList<Cell> row = new ArrayList<>();
-            for (int colIndex = 0; colIndex < 4; colIndex++) {
-                row.add(this.content.get(rowIndex * 4 + colIndex));
-            }
-            result.add(row);
-        }
-        return result;
+    public int[][] getContent() {
+        return new int[][]{
+                this.rows.get(0).stream().mapToInt(Cell::asInt).toArray(),
+                this.rows.get(1).stream().mapToInt(Cell::asInt).toArray(),
+                this.rows.get(2).stream().mapToInt(Cell::asInt).toArray(),
+                this.rows.get(3).stream().mapToInt(Cell::asInt).toArray(),
+        };
     }
 
-    private void moveRowLeft(List<Cell> row) {
-//        List<Cell> movedRow = new ArrayList<>();
-//        row.forEach(cell -> {
-//            if (!cell.isEmpty()) {
-//                movedRow.add(cell);
-//            }
-//        });
-        // remplir
-
-        // X X 2 X
-        // X X 2 2
-        // 2 X X 2
-        // 2 2 2 2
-
-        // while not all pushed left (
-        // get next non-empty cell
-        // push it left until left cell not empty
-        // )
-
-        // TODO refactor this to simplify
-
-        int firstEmptyCellIndex = -1;
+    private void moveTilesLeft(List<Cell> row) {
         for (int cellIndex = 0; cellIndex < 4; cellIndex++) {
-            Cell cell = row.get(cellIndex);
-            if (cell.isEmpty() && firstEmptyCellIndex == -1) {
-                firstEmptyCellIndex = cellIndex;
-            } else if (!cell.isEmpty() && firstEmptyCellIndex != -1) {
-                Cell firstEmptyCell = row.get(firstEmptyCellIndex);
-                firstEmptyCell.setTile(cell.asInt());
-                cell.setTile(0);
-                firstEmptyCellIndex++;
-            }
+            moveTileLeft(row, cellIndex);
         }
     }
 
-    private List<Cell> contentWithEmptyCells() {
-        return Stream.generate(Cell::new).limit(16).collect(Collectors.toList());
+    private void moveTileLeft(List<Cell> row, int cellIndex) {
+        Cell cell = row.get(cellIndex);
+        Optional<Cell> targetCellOption = firstEmptyCell(row);
+        targetCellOption.ifPresent(targetCell -> {
+            targetCellOption.get().setTile(cell.asInt());
+            cell.setTile(0);
+        });
+    }
+
+    private Optional<Cell> firstEmptyCell(List<Cell> row) {
+        return row.stream()
+                .filter(Cell::isEmpty)
+                .findFirst();
     }
 
     private void addRandomTile(RandomGenerator randomGenerator) {
-        int emptyCells = countEmptyCells();
-        int cellIndex = randomGenerator.randomInt(0, emptyCells);
-        this.content.stream()
-                .filter(Cell::isEmpty)
-                .skip(cellIndex)
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("Not enough empty cells"))
-                .setTile(2);
+        List<Cell> emptyCells = emptyCells();
+        int randomCellIndex = randomGenerator.randomInt(0, emptyCells.size());
+        emptyCells.get(randomCellIndex).setTile(2);
     }
 
-    private int countEmptyCells() {
-        return (int) this.content.stream()
+    private List<Cell> emptyCells() {
+        return this.rows.stream()
+                .flatMap(Collection::stream)
                 .filter(Cell::isEmpty)
-                .count();
+                .collect(toList());
+    }
+
+    public static Board newGame(RandomGenerator randomGenerator) {
+        Board board = new Board();
+        board.rows = emptyRows();
+        board.addRandomTile(randomGenerator);
+        board.addRandomTile(randomGenerator);
+        return board;
     }
 
     public static Board fromContent(int[][] content) {
-        // TODO refactor this to simplify
         Board board = new Board();
-        board.content = Arrays.stream(content)
-                .flatMapToInt(Arrays::stream)
-                .mapToObj(Cell::new)
-                .collect(Collectors.toList());
+        board.rows = rowsFromContent(content);
         return board;
+    }
+
+    private static List<List<Cell>> emptyRows() {
+        return Stream.generate(Board::emptyRow).limit(4).collect(toList());
+    }
+
+    private static List<Cell> emptyRow() {
+        return Stream.generate(Cell::new).limit(4).collect(toList());
+    }
+
+    private static List<List<Cell>> rowsFromContent(int[][] content) {
+        return Arrays.stream(content)
+                .map(Board::rowFromContent)
+                .collect(toList());
+    }
+
+    private static List<Cell> rowFromContent(int[] rowContent) {
+        return Arrays.stream(rowContent)
+                .mapToObj(Cell::new)
+                .collect(toList());
     }
 }

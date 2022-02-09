@@ -15,7 +15,7 @@ class BoardTest {
     @Test
     void board_size_is_4x4() {
         RandomGenerator randomGenerator = new RandomGeneratorDouble(1L);
-        Board board = new Board(randomGenerator);
+        Board board = Board.newGame(randomGenerator);
 
         int[][] boardContent = board.getContent();
         assertThat(boardContent).hasDimensions(4, 4);
@@ -24,7 +24,7 @@ class BoardTest {
     @Test
     void board_contains_two_tiles() {
         RandomGenerator randomGenerator = new RandomGeneratorDouble(1L);
-        Board board = new Board(randomGenerator);
+        Board board = Board.newGame(randomGenerator);
 
         int[][] boardContent = board.getContent();
         assertThat(numberOfCellsWithTiles(boardContent)).isEqualTo(2);
@@ -33,9 +33,9 @@ class BoardTest {
     @Test
     void first_two_tiles_are_placed_randomly_classicist() {
         RandomGenerator randomGenerator1 = new RandomGeneratorDouble(1L);
-        Board board1 = new Board(randomGenerator1);
+        Board board1 = Board.newGame(randomGenerator1);
         RandomGenerator randomGenerator2 = new RandomGeneratorDouble(2L);
-        Board board2 = new Board(randomGenerator2);
+        Board board2 = Board.newGame(randomGenerator2);
 
         assertThat(board1.getContent()).isNotEqualTo(board2.getContent());
     }
@@ -46,7 +46,7 @@ class BoardTest {
         RandomGenerator randomGenerator = mock(RandomGenerator.class);
         when(randomGenerator.randomInt(0, 4)).thenReturn(0, 1, 2, 3);
 
-        Board board = new Board(randomGenerator);
+        Board board = Board.newGame(randomGenerator);
 
         int[][] boardContent = board.getContent();
         assertThat(boardContent[0][1]).isEqualTo(2);
@@ -56,7 +56,7 @@ class BoardTest {
     @Test
     void random_board_generation_is_resilient_to_collisions() {
         RandomGenerator randomGenerator = new CollisionRandomGeneratorDouble();
-        Board board = new Board(randomGenerator);
+        Board board = Board.newGame(randomGenerator);
 
         int[][] boardContent = board.getContent();
         assertThat(numberOfCellsWithTiles(boardContent)).isEqualTo(2);
