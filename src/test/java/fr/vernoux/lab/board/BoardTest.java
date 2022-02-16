@@ -81,6 +81,63 @@ class BoardTest {
         });
     }
 
+    @Test
+    void move_down_should_move_all_tiles_to_the_bottom() {
+        Board board = Board.fromContent(new int[][]{
+                {0, 0, 0, 0},
+                {0, 0, 2, 0},
+                {0, 0, 0, 0},
+                {2, 0, 0, 0},
+        });
+
+        board.moveDown();
+
+        assertThat(board.getContent()).isDeepEqualTo(new int[][]{
+                {0, 0, 0, 0},
+                {0, 0, 0, 0},
+                {0, 0, 0, 0},
+                {2, 0, 2, 0},
+        });
+    }
+
+    @Test
+    void move_up_should_move_all_tiles_to_the_top() {
+        Board board = Board.fromContent(new int[][]{
+                {0, 0, 0, 0},
+                {0, 0, 2, 0},
+                {0, 0, 0, 0},
+                {2, 0, 0, 0},
+        });
+
+        board.moveUp();
+
+        assertThat(board.getContent()).isDeepEqualTo(new int[][]{
+                {2, 0, 2, 0},
+                {0, 0, 0, 0},
+                {0, 0, 0, 0},
+                {0, 0, 0, 0},
+        });
+    }
+
+    @Test
+    void move_right_should_move_all_tiles_to_the_right() {
+        Board board = Board.fromContent(new int[][]{
+                {0, 0, 0, 0},
+                {0, 0, 2, 0},
+                {0, 0, 0, 0},
+                {2, 0, 0, 0},
+        });
+
+        board.moveRight();
+
+        assertThat(board.getContent()).isDeepEqualTo(new int[][]{
+                {0, 0, 0, 0},
+                {0, 0, 0, 2},
+                {0, 0, 0, 0},
+                {0, 0, 0, 2},
+        });
+    }
+
     private int numberOfCellsWithTiles(int[][] boardContent) {
         int numberOfCellsWithTiles = 0;
         for (int[] row : boardContent) {

@@ -3,52 +3,38 @@ package fr.vernoux.lab.board;
 import fr.vernoux.lab.RandomGenerator;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 
 public class Board {
 
-    private List<List<Cell>> rows;
+    private List<Row> rows;
 
     private Board() {
     }
 
     public void moveLeft() {
-        rows.forEach(this::moveTilesLeft);
+        rows.forEach(Row::moveTilesLeft);
+    }
+
+    public void moveRight() {
+        rows.forEach(Row::moveTilesRight);
+    }
+
+    public void moveUp() {
+        asColumns().forEach(Column::moveTilesUp);
+    }
+
+    public void moveDown() {
+        asColumns().forEach(Column::moveTilesDown);
     }
 
     public int[][] getContent() {
-        return new int[][]{
-                this.rows.get(0).stream().mapToInt(Cell::asInt).toArray(),
-                this.rows.get(1).stream().mapToInt(Cell::asInt).toArray(),
-                this.rows.get(2).stream().mapToInt(Cell::asInt).toArray(),
-                this.rows.get(3).stream().mapToInt(Cell::asInt).toArray(),
-        };
-    }
-
-    private void moveTilesLeft(List<Cell> row) {
-        for (int cellIndex = 0; cellIndex < 4; cellIndex++) {
-            moveTileLeft(row, cellIndex);
-        }
-    }
-
-    private void moveTileLeft(List<Cell> row, int cellIndex) {
-        Cell cell = row.get(cellIndex);
-        Optional<Cell> targetCellOption = firstEmptyCell(row);
-        targetCellOption.ifPresent(targetCell -> {
-            targetCellOption.get().setTile(cell.asInt());
-            cell.setTile(0);
-        });
-    }
-
-    private Optional<Cell> firstEmptyCell(List<Cell> row) {
-        return row.stream()
-                .filter(Cell::isEmpty)
-                .findFirst();
+        return this.rows.stream()
+                .map(Row::getValues)
+                .toArray(int[][]::new);
     }
 
     private void addRandomTile(RandomGenerator randomGenerator) {
@@ -59,9 +45,20 @@ public class Board {
 
     private List<Cell> emptyCells() {
         return this.rows.stream()
-                .flatMap(Collection::stream)
+                .flatMap(row -> row.getCells().stream())
                 .filter(Cell::isEmpty)
                 .collect(toList());
+    }
+
+    private List<Column> asColumns() {
+        List<Column> columns = emptyColumns();
+        for (int columnIndex = 0; columnIndex < 4; columnIndex++) {
+            for (int rowIndex = 0; rowIndex < 4; rowIndex++) {
+                Cell cell = this.rows.get(rowIndex).getCells().get(columnIndex);
+                columns.get(columnIndex).getCells().set(rowIndex, cell);
+            }
+        }
+        return columns;
     }
 
     public static Board newGame(RandomGenerator randomGenerator) {
@@ -74,27 +71,21 @@ public class Board {
 
     public static Board fromContent(int[][] content) {
         Board board = new Board();
-        board.rows = rowsFromContent(content);
+        board.rows = rowsFromValues(content);
         return board;
     }
 
-    private static List<List<Cell>> emptyRows() {
-        return Stream.generate(Board::emptyRow).limit(4).collect(toList());
+    private static List<Row> emptyRows() {
+        return Stream.generate(Row::new).limit(4).collect(toList());
     }
 
-    private static List<Cell> emptyRow() {
-        return Stream.generate(Cell::new).limit(4).collect(toList());
+    private static List<Column> emptyColumns() {
+        return Stream.generate(Column::new).limit(4).collect(toList());
     }
 
-    private static List<List<Cell>> rowsFromContent(int[][] content) {
-        return Arrays.stream(content)
-                .map(Board::rowFromContent)
-                .collect(toList());
-    }
-
-    private static List<Cell> rowFromContent(int[] rowContent) {
-        return Arrays.stream(rowContent)
-                .mapToObj(Cell::new)
+    private static List<Row> rowsFromValues(int[][] values) {
+        return Arrays.stream(values)
+                .map(Row::new)
                 .collect(toList());
     }
 }
